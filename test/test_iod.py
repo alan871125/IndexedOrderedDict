@@ -101,6 +101,10 @@ class TestIndexedOrderedDict():
         assert d.pop("foo")=="bar"
         assert "foo" not in d
         
+        d["foo2"] = "bar2"
+        assert d.pop() == "bar2", "pop() should return the last value"
+        assert "foo2" not in d, "pop() should remove the last item"
+        
     def test_popitem(self):
         d = IndexedOrderedDict({
             'a': 1,

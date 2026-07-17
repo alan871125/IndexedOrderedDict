@@ -106,7 +106,6 @@ impl KeyWrapper {
         KeyWrapper(self.0.clone_ref(py))
     }
 }
-
 impl PartialEq for KeyWrapper {
     fn eq(&self, other: &Self) -> bool {
         Python::attach(|py| {
@@ -310,15 +309,30 @@ impl IndexedOrderedDict {
         }
     }
 
-    #[pyo3(signature = (key, default=None))]
-    fn pop(&mut self, py: Python<'_>, key: Py<PyAny>, default: Option<Py<PyAny>>) -> PyResult<Py<PyAny>> {
-        match self.map.shift_remove(&KeyWrapper(key.clone_ref(py))) {
-            Some(val) => Ok(val),
+    #[pyo3(signature = (key=None, default=None))]
+    fn pop(&mut self, py: Python<'_>, key: Option<Py<PyAny>>, default: Option<Py<PyAny>>) -> PyResult<Py<PyAny>> {
+        match key{
             None => {
-                if let Some(d) = default {
-                    Ok(d)
-                } else {
-                    Err(PyKeyError::new_err(key))
+                let (k, v) = {
+                    let (k, v) = self
+                        .map
+                        .last()
+                        .ok_or_else(|| PyKeyError::new_err("dictionary is empty"))?;
+                    (k.clone_ref(py), v.clone_ref(py))
+                }; // <-- borrow from last() ends here
+                self.map.shift_remove(&k);
+                Ok(v)
+            }
+            Some(key) => {
+                match self.map.shift_remove(&KeyWrapper(key.clone_ref(py))) {
+                    Some(val) => Ok(val),
+                    None => {
+                        if let Some(d) = default {
+                            Ok(d)
+                        } else {
+                            Err(PyKeyError::new_err(key))
+                        }
+                    }
                 }
             }
         }
