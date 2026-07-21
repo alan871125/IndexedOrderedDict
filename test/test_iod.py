@@ -172,6 +172,20 @@ class TestIndexedOrderedDict():
         d.update(IndexedOrderedDict(c=3, b=2,d=5))
         assert d == IndexedOrderedDict(a=1, b=2, c=3,d=5)
         
+    def test_inheritance(self):
+        class MyDict(IndexedOrderedDict[str, int]):
+            pass
+
+        d = MyDict(a=1, b=2)
+        assert isinstance(d, IndexedOrderedDict)
+        assert d['a'] == 1
+        assert d['b'] == 2
+
+    def test_generic_subscription(self):
+        alias = IndexedOrderedDict[str, int]
+        assert alias.__origin__ is IndexedOrderedDict
+        assert alias.__args__ == (str, int)
+        
 if __name__ == "__main__":
     import os
     print(os.getpid())

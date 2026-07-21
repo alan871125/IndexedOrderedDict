@@ -5,7 +5,7 @@ use indexmap::IndexMap;
 
 use pyo3::exceptions::{PyKeyError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::types::{PyAny, PyDict, PyIterator, PyList, PyTuple, PyType};
+use pyo3::types::{PyAny, PyDict, PyGenericAlias, PyIterator, PyList, PyTuple, PyType};
 
 /// Internal, pure-Rust ordered map.
 ///
@@ -442,6 +442,15 @@ impl IndexedOrderedDict {
             self.map.insert(KeyWrapper(k), v);
         }
         Ok(())
+    }
+
+    #[classmethod]
+    #[pyo3(signature = (key, /))]
+    fn __class_getitem__(
+        cls: &Bound<'_, PyType>,
+        key: &Bound<'_, PyAny>,
+    ) -> PyResult<Py<PyAny>> {
+        Ok(PyGenericAlias::new(cls.py(), cls.as_any(), key)?.into_any().unbind())
     }
 
 
