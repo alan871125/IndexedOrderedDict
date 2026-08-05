@@ -30,6 +30,7 @@ class TestIndexedOrderedDict():
         assert(d3['a'] == 1)
         assert(d3['b'] == 2)
         assert(d3['c'] == 3)
+        
     def test_del(self):
         d = IndexedOrderedDict(
             a=1,
@@ -39,8 +40,8 @@ class TestIndexedOrderedDict():
 
         del d["a"]
         assert("a" not in d)
-        assert(d.keys().index('b')==0)
-        assert(d.keys().index('c')==1)
+        assert(d.keys()[0]=='b')
+        assert(d.keys()[1]=='c')
 
     def test_iter(self):
         d = IndexedOrderedDict(
@@ -58,6 +59,7 @@ class TestIndexedOrderedDict():
         assert list(d.keys()[1:3]) == ['c', 'a']
         assert list(d.values()[:3]) == [1, 2, 3]
         assert list(d.items()[5:]) == []
+        assert list(d.items()[0:-1]) == [('b', 1), ('c', 2), ('a', 3)]
 
     def test_reversed(self):
         d = IndexedOrderedDict(
@@ -106,17 +108,45 @@ class TestIndexedOrderedDict():
         assert "foo2" not in d, "pop() should remove the last item"
         
     def test_popitem(self):
-        d = IndexedOrderedDict({
-            'a': 1,
-            'b': 2,
-            'c': 3,            
-        })
-        key, value = d.popitem()
-        assert (key,value) ==('c',3)
-
+        d = IndexedOrderedDict()
+        with pytest.raises(KeyError):
+            d.popitem()
+        d|= {'a':1, 'b':2, 'c':3}
+        assert d.popitem() ==('c',3)
+        with pytest.raises(KeyError):
+            d.popitem('d')
     
+    def test_ipopitem(self):
+        d = IndexedOrderedDict()
+        with pytest.raises(IndexError):
+            d.ipopitem()
+        d|= {'a':1, 'b':2, 'c':3}
+        assert d.ipopitem(0) ==('a',1)
+        assert d.ipopitem() == ('c',3)
+        with pytest.raises(IndexError):
+            d.ipopitem(5)
 
+    def test_indexing(self):
+        d = IndexedOrderedDict()
+        d["a"] = "alpha"
+        d["b"] = "beta"
 
+        assert d.ikey(0) == "a"
+        assert d.ikey(1) == "b"
+        assert d.ikey(2) is None
+        assert d.iget(0) == "alpha"
+        assert d.iget(1) == "beta"
+        assert d.iget(2) is None
+    
+    def test_pop_index(self):
+        d = IndexedOrderedDict(a='alpha', b='beta', c='gamma')
+        assert d.ipop(1) == 'beta'
+        assert list(d.keys()) == ["a", "c"]
+        assert list(d.values()) == ["alpha", "gamma"]
+        # Test popping an index that doesn't exist, should raise an IndexError
+        with pytest.raises(IndexError):
+            d.ipop(5)
+        
     def test_setdefault(self):
         d = IndexedOrderedDict()
         d["a"] = "alpha"
@@ -124,7 +154,6 @@ class TestIndexedOrderedDict():
         assert d.setdefault("a", None), "alpha"
         assert d.setdefault("b", "beta"), "beta"
         assert d.setdefault("b", "gamma"), "beta"
-
     
     def test_eq(self):
         a = IndexedOrderedDict(a=1, b=2, c=3)
@@ -150,12 +179,12 @@ class TestIndexedOrderedDict():
     def test_from_keys(self):
         d = IndexedOrderedDict.fromkeys({"a":'alpha',
             "b":'beta'}, "default")
-        assert d.values() == ["default", "default"]
+        assert list(d.values()) == ["default", "default"]
         
         d2 = IndexedOrderedDict.fromkeys(["a","b","c"], [])
-        assert d2.values() == [[], [], []]
+        assert list(d2.values()) == [[], [], []]
         d2["a"].append(1)
-        assert d2.values() == [[1], [1], [1]]
+        assert list(d2.values()) == [[1], [1], [1]]
 
     def test_or(self):
         d1 = IndexedOrderedDict(a=1, b=2)

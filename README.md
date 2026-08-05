@@ -1,6 +1,6 @@
 # IndexedOrderedDictionary
 
-This is an implementation of an Indexed Ordered Dictionary for Python with rust
+This is an implementation of an Indexed Ordered Dictionary for Python with rust.
 
 ## Complexity
 
@@ -12,10 +12,11 @@ insertion are hash-table based while insertion order is preserved.
 | `len(d)` | `O(1)` | Stored length |
 | `d[key]`, `d.get(key)`, `key in d` | `O(1)` | Worst case can degrade with hash collisions |
 | `d[key] = value` | `O(1)` | Existing keys keep their current position |
-| `del d[key]`, `pop(key)` | `O(n)` | Preserves order by shifting later entries |
-| `popitem(last=True)` | `O(1)` | Removes the last entry |
-| `popitem(last=False)` | `O(n)` | Removes the first entry and shifts later entries |
-| `keys()`, `values()`, `items()`, iteration | `O(n)` | Builds Python list-backed views/iterators |
+| `del d[key]`, `pop(key)`, `popitem(key)` `ipop(index)`, `ipopitem(index)` | `O(n)` | Preserves order by shifting later entries |
+| `popitem()`, `ipopitem()`, `ipop()` | `O(1)` | Removes the **last** entry, when key or index not specified |
+| `keys()`, `values()`, `items()` | `O(1)` | Builds Rust-backed views|
+| `ikey(index)`, `iget(index)`|`O(1)`|Indexes the using IndexedMap|
+| `keys()[index]`, `values()[index]`, `items()[index]`|`O(1)`|Same as above|
 | `copy()` | `O(n)` | Clones Python object references |
 | `update(other)` | `O(m)` | `m` is the number of incoming items |
 | `d1 \| d2` | `O(n + m)` | Copies the left dictionary, then inserts the right |
