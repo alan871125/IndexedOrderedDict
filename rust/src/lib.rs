@@ -1,8 +1,7 @@
 use pyo3::prelude::*;
 
-mod indexed_ordered_dict;
-use indexed_ordered_dict::{IndexedOrderedDict, IODKeysView, IODValuesView};
-
+pub mod indexed_ordered_dict;
+pub use indexed_ordered_dict::{IndexedOrderedMap, IndexedOrderedDict, IODKeysView, IODValuesView, KeyWrapper};
 /// A Python module implemented in Rust.
 #[pymodule]
 // #[pyo3(name = "__init__")]
